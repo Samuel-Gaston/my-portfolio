@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import './new.css';
 import Swal from 'sweetalert2';
-const PHRASES = ['Full-Stack', 'Web & Mobile', 'React Native', 'Full-Stack'];
+import emailjs from 'emailjs-com'
+const PHRASES = ['Full-Stack', 'Web & Mobile'];
 
 export default function NewLandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -178,14 +179,20 @@ export default function NewLandingPage() {
    const[name, setName] = useState("");
     const[email, setemail] = useState("");
     const[subject, setsubject] = useState("");
-    const[message, setmessage] = useState("");
+    const[message, setmessage] = useState("")
+    const [loading, setLoading] = useState(false);
 
 
-    const HandleSubmit = () =>{
-     if(!name || !subject || !email || !message){
-     Swal.fire({
+
+const HandleSubmit = (e: any) => {
+  e.preventDefault();
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    Swal.fire({
       title: 'Error!',
-      html: 'All fields are required.', 
+      html: 'Enter a valid email address.',
       icon: 'error',
       confirmButtonText: 'OK',
       customClass: {
@@ -195,12 +202,14 @@ export default function NewLandingPage() {
       },
       backdrop: true
     });
-     }
-     else{
- Swal.fire({
-      title: 'Success!',
-      html: 'Message sent successfully.',
-      icon: 'success',
+    return;
+  }
+
+  if (!name || !email || !message || !subject) {
+    Swal.fire({
+      title: 'Error!',
+      html: 'All fields are required.',
+      icon: 'error',
       confirmButtonText: 'OK',
       customClass: {
         popup: 'swal2-dark-popup',
@@ -209,8 +218,55 @@ export default function NewLandingPage() {
       },
       backdrop: true
     });
-     }
-    }
+    return;
+  }
+
+  setLoading(true); 
+
+  emailjs
+    .send(
+      "service_lksfa4q",
+      "template_r8rhcg4",
+      {
+        name,
+        email,
+        subject,
+        message,
+      },
+      "NQOMU-8eNMYJoVqni"
+    )
+    .then(() => {
+      setName("");
+      setemail("");
+      setsubject("");
+      setmessage("");
+
+      Swal.fire({
+        title: 'Success!',
+        html: 'Message sent successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        customClass: {
+          popup: 'swal2-dark-popup',
+          title: 'swal2-dark-title',
+          confirmButton: 'swal2-dark-btn'
+        },
+        backdrop: true
+      });
+    })
+    .catch((error) => {
+      console.error("EmailJS Error:", error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to send message!',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+};
 
   return (
     <>
@@ -315,9 +371,9 @@ export default function NewLandingPage() {
                 <div className="sec-tag reveal">About Me</div>
                 <h2 className="sec-title reveal rd1">Crafting <span className="gr">digital experiences</span> with purpose</h2>
               </div>
-              <p className="reveal rd2">I'm <strong>Samuel Gaston</strong>, a full-stack developer and mobile application engineer with over <strong>2 years of professional experience</strong>. I specialize in building scalable, user-centric applications from pixel-perfect frontends to robust backend architectures.</p>
+              <p className="reveal rd2">I'm <strong>Samuel Gaston</strong>, a full-stack developer and mobile application engineer with over <strong>2 years of professional experience</strong>. I specialize in building scalable, user-centric applications from stunning frontends to robust backend architectures.</p>
               <p className="reveal rd3">My expertise spans the complete development lifecycle — from ideating features and designing databases, to deploying production-ready applications. I work across <strong>web and mobile platforms</strong>, combining modern frontend frameworks with powerful backend solutions.</p>
-              <p className="reveal rd3">I'm driven by clean code, thoughtful UI/UX, and delivering products that genuinely solve problems. Whether it's a mobile commerce app or a complex real estate platform — I bring the same <strong>attention to detail and passion</strong> to every project.</p>
+              <p className="reveal rd3">I'm driven by clean code, thoughtful UI/UX, and delivering products that genuinely solve problems. Whether it's a mobile commerce app or a real estate platform — I bring the same <strong>attention to detail and passion</strong> to every project.</p>
               <div className="about-pills reveal rd4">
                 <span className="pill">Fast Learner</span>
                 <span className="pill">Problem Solver</span>
@@ -421,7 +477,7 @@ export default function NewLandingPage() {
                   <div className="exp-date">2025 — Present</div>
                   <div className="exp-role">Full-Stack Developer</div>
                   <div className="exp-co">Freelance / Remote</div>
-                  <p className="exp-desc">Delivering end-to-end web and mobile solutions for clients across multiple industries. Specializing in React, Next.js, Node.js, and React Native with focus on performance and UX.</p>
+                  <p className="exp-desc">Delivering end-to-end web and mobile solutions for clients. Specializing in React, Next.js, Node.js, and React Native with focus on performance and UX.</p>
                 </div>
                 <div className="exp-item reveal rd2">
                   <div className="exp-dot"></div>
@@ -485,12 +541,18 @@ export default function NewLandingPage() {
             </div>
             <div className="contact-form reveal rd2">
               <div className="form-row">
-                <div className="f-field"><input type="text" placeholder="Your Name" onChange={(e) => setName(e.target.value) } /></div>
-                <div className="f-field"><input type="email" placeholder="Your Email" onChange={(e) => setemail(e.target.value) } /></div>
+                <div className="f-field"><input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value) } /></div>
+                <div className="f-field"><input type="email" placeholder="Your Email" value={email} onChange={(e) => setemail(e.target.value) } /></div>
               </div>
-              <div className="f-field"><input type="text" placeholder="Subject — e.g. Mobile App Project" onChange={(e) => setsubject(e.target.value) } /></div>
-              <div className="f-field"><textarea placeholder="Tell me about your project…" onChange={(e) => setmessage(e.target.value) } ></textarea></div>
-              <button onClick={HandleSubmit} className="form-submit"><span>Send Message →</span></button>
+              <div className="f-field"><input type="text" placeholder="Subject — e.g. Mobile App Project" value={subject} onChange={(e) => setsubject(e.target.value) } /></div>
+              <div className="f-field"><textarea placeholder="Tell me about your project…" value={message} onChange={(e) => setmessage(e.target.value) } ></textarea></div>
+             <button
+  onClick={HandleSubmit}
+  className="form-submit"
+  disabled={loading}
+>
+  <span>{loading ? "Sending..." : "Send Message →"}</span>
+</button>
             </div>
           </div>
         </div>
